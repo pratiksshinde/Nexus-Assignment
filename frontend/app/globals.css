@@ -67,6 +67,11 @@ th, td { overflow-wrap: anywhere; padding: .75rem; text-align: left; vertical-al
 .pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; color: var(--muted); }
 .pagination > div { display: flex; gap: .5rem; }
 .empty-state { padding: 2rem; text-align: center; color: var(--muted); }
+.modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 45%); }
+.modal { width: min(520px, 100%); max-height: calc(100vh - 2rem); overflow-y: auto; }
+.modal h3 { margin: 0; }
+.modal-close { padding: .2rem .55rem; color: var(--muted); background: transparent; font-size: 1.6rem; line-height: 1; }
+.modal-actions { display: flex; justify-content: flex-end; gap: .65rem; }
 pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); }
 @media (max-width: 720px) {
   header { position: static; align-items: stretch; flex-direction: column; gap: .5rem; }
