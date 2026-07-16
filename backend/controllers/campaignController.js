@@ -1,6 +1,6 @@
 const { sequelize, Campaign, CampaignRecipient } = require("../models");
 const { resolveSource, previewManualRecipients } = require("../services/recipientService");
-const { enqueueCampaign } = require("../queues/campaignQueue");
+const { processDueCampaigns } = require("../services/campaignScheduler");
 
 const campaignWhere = (req) => ({ id: req.params.id, workspace_id: req.user.workspace_id });
 
@@ -115,7 +115,9 @@ const sendCampaign = async (req, res) => {
   try {
     await campaign.update({ status: "scheduled", scheduled_at: sendAt });
     await CampaignRecipient.update({ status: "queued" }, { where: { campaign_id: campaign.id } });
-    await enqueueCampaign(campaign.id, sendAt);
+    if (sendAt <= new Date()) {
+      setImmediate(() => processDueCampaigns().catch((error) => console.error("Campaign send failed", error)));
+    }
     res.json({ success: true, message: req.body.scheduled_at ? "Campaign scheduled" : "Campaign queued to send", data: { campaign } });
   } catch (error) {
     await campaign.update({ status: "draft", scheduled_at: null });

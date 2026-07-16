@@ -10,7 +10,7 @@ A small email marketing application built for the take-home assessment.
 ## Structure
 
 - `frontend` — Next.js application
-- `backend` — Express API, BullMQ worker, Sequelize/Postgres models and Brevo integration
+- `backend` — Express API, Sequelize/Postgres models and Brevo integration
 
 ## Run locally
 
@@ -20,13 +20,6 @@ Start the API:
 cd backend
 npm install
 npm run dev
-```
-
-Start the campaign worker in another terminal:
-
-```bash
-cd backend
-npm run worker
 ```
 
 Start the frontend:

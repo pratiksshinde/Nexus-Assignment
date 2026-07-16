@@ -6,12 +6,17 @@ const sendCampaign = async (campaignId) => {
     throw new Error("BREVO_API_KEY and SENDER_EMAIL are required");
   }
 
+  const [claimed] = await Campaign.update(
+    { status: "sending", failure_reason: null },
+    { where: { id: campaignId, status: "scheduled" } },
+  );
+  if (!claimed) return;
+
   const campaign = await Campaign.findByPk(campaignId, {
     include: [{ model: CampaignRecipient, as: "recipients" }],
   });
-  if (!campaign || !["scheduled", "sending"].includes(campaign.status)) return;
+  if (!campaign) return;
 
-  await campaign.update({ status: "sending", failure_reason: null });
   let sent = campaign.recipients.filter((item) => ["sent", "delivered", "opened"].includes(item.status)).length;
 
   for (const recipient of campaign.recipients.filter((item) => ["pending", "queued"].includes(item.status))) {

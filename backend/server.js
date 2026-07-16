@@ -13,6 +13,7 @@ const tagRoutes = require("./routes/tagRoutes");
 const audienceRoutes = require("./routes/audienceRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
+const { startCampaignScheduler } = require("./services/campaignScheduler");
 
 const app = express();
 const allowedOrigins = new Set([
@@ -90,6 +91,7 @@ async function startServer() {
       console.log(
         `Server running on port ${process.env.PORT || 4000}`
       );
+      startCampaignScheduler();
     });
   } catch (error) {
     console.error("Database Connection Failed", error);
