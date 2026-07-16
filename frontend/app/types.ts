@@ -1,6 +1,14 @@
 export type User = { name: string };
 export type Tag = { id: number; name: string; contact_count?: number };
-export type Contact = { id: number; name: string; email?: string; phone?: string; city?: string; tags: Tag[] };
+export type Contact = {
+  id: number;
+  name: string;
+  email?: string;
+  phone?: string;
+  city?: string;
+  custom_fields?: Record<string, unknown>;
+  tags: Tag[];
+};
 export type Audience = { id: number; name: string; contact_count: number; filter_definition: Record<string, unknown> };
 export type CampaignRecipient = {
   id: number;

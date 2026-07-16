@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import {
   createContact,
   createTag,
@@ -24,21 +24,29 @@ export default function ContactsSection({
   notice: (text: string) => void;
 }) {
   const [busy, setBusy] = useState("");
+  const [editing, setEditing] = useState<Contact | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   async function run(key: string, task: () => Promise<void>) {
     setBusy(key);
     try { await task(); } catch (caught) { notice(errorMessage(caught)); } finally { setBusy(""); }
   }
 
-  async function addContact(event: FormEvent<HTMLFormElement>) {
+  async function saveContact(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     await run("contact", async () => {
       const values = Object.fromEntries(new FormData(form));
       values.custom_fields = values.custom_fields ? JSON.parse(String(values.custom_fields)) : {};
-      await createContact(values);
+      if (editing) {
+        await updateContact(editing.id, values);
+      } else {
+        await createContact(values);
+      }
       form.reset();
+      setEditing(null);
       await reload();
+      notice(editing ? "Contact updated" : "Contact added");
     });
   }
 
@@ -63,33 +71,39 @@ export default function ContactsSection({
     });
   }
 
-  async function edit(contact: Contact) {
-    const name = window.prompt("Name", contact.name);
-    if (name === null) return;
-    const email = window.prompt("Email", contact.email || "");
-    if (email === null) return;
-    const phone = window.prompt("Phone", contact.phone || "");
-    if (phone === null) return;
-    const city = window.prompt("City", contact.city || "");
-    if (city === null) return;
-    await run(`edit-${contact.id}`, async () => {
-      await updateContact(contact.id, { name, email, phone, city });
-      await reload();
-    });
+  function edit(contact: Contact) {
+    setEditing(contact);
+    requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    formRef.current?.reset();
   }
 
   return (
     <section>
       <h2>Contacts</h2>
       <div className="grid two">
-        <form className="card" onSubmit={addContact}>
-          <h3>Add contact</h3>
-          <input name="name" placeholder="Name" required disabled={Boolean(busy)} />
-          <input name="email" type="email" placeholder="Email" disabled={Boolean(busy)} />
-          <input name="phone" placeholder="Phone" disabled={Boolean(busy)} />
-          <input name="city" placeholder="City" disabled={Boolean(busy)} />
-          <textarea name="custom_fields" placeholder='Custom fields JSON, e.g. {"plan":"pro"}' rows={2} disabled={Boolean(busy)} />
-          <button disabled={Boolean(busy)}>{busy === "contact" ? "Adding…" : "Add contact"}</button>
+        <form className="card" key={editing?.id || "new"} ref={formRef} onSubmit={saveContact}>
+          <h3>{editing ? `Edit ${editing.name}` : "Add contact"}</h3>
+          <input name="name" defaultValue={editing?.name || ""} placeholder="Name" required disabled={Boolean(busy)} />
+          <input name="email" type="email" defaultValue={editing?.email || ""} placeholder="Email" disabled={Boolean(busy)} />
+          <input name="phone" defaultValue={editing?.phone || ""} placeholder="Phone" disabled={Boolean(busy)} />
+          <input name="city" defaultValue={editing?.city || ""} placeholder="City" disabled={Boolean(busy)} />
+          <textarea
+            name="custom_fields"
+            defaultValue={editing?.custom_fields ? JSON.stringify(editing.custom_fields) : ""}
+            placeholder='Custom fields JSON, e.g. {"plan":"pro"}'
+            rows={2}
+            disabled={Boolean(busy)}
+          />
+          <div className="inline">
+            <button disabled={Boolean(busy)}>
+              {busy === "contact" ? "Saving…" : editing ? "Update contact" : "Add contact"}
+            </button>
+            {editing && <button type="button" className="secondary" disabled={Boolean(busy)} onClick={cancelEdit}>Cancel</button>}
+          </div>
         </form>
         <div className="stack">
           <form className="card" onSubmit={importCsv}>
@@ -115,9 +129,10 @@ export default function ContactsSection({
                 <td><ContactTags key={`${contact.id}-${contact.tags.map((tag) => tag.id).join("-")}`} contact={contact} tags={tags} reload={reload} notice={notice} /></td>
                 <td>
                   <div className="inline">
-                    <button className="small" onClick={() => edit(contact)}>Edit</button>
-                    <button className="danger small" onClick={() => run(`delete-${contact.id}`, async () => {
+                    <button type="button" className="small" disabled={Boolean(busy)} onClick={() => edit(contact)}>Edit</button>
+                    <button type="button" className="danger small" disabled={Boolean(busy)} onClick={() => run(`delete-${contact.id}`, async () => {
                       await deleteContact(contact.id);
+                      if (editing?.id === contact.id) setEditing(null);
                       await reload();
                     })}>Delete</button>
                   </div>
