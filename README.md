@@ -2,6 +2,11 @@
 
 A small email marketing application built for the take-home assessment.
 
+## Live application
+
+- Frontend: https://nexus-assignment-six.vercel.app
+- Backend: https://nexus-assignment-rlf7.onrender.com
+
 ## Structure
 
 - `frontend` — Next.js application

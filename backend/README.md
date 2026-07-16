@@ -17,6 +17,8 @@ npm run worker
 
 The API runs at `http://localhost:4000/api` by default. Sequelize creates missing tables during this assessment-stage build.
 
+The deployed API is available at `https://nexus-assignment-rlf7.onrender.com`.
+
 ## Email and webhooks
 
 Create a Brevo API key and verify `SENDER_EMAIL`. Configure a transactional webhook for delivered and opened events using:

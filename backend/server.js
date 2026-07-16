@@ -15,12 +15,20 @@ const campaignRoutes = require("./routes/campaignRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
 
 const app = express();
+const allowedOrigins = new Set([
+  "http://localhost:3000",
+  "https://nexus-assignment-six.vercel.app",
+  ...(process.env.CLIENT_URL || "").split(",").map((origin) => origin.trim()).filter(Boolean),
+]);
 
 app.get("/api/health", (req, res) => res.json({ success: true }));
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      return callback(new Error("Origin not allowed by CORS"));
+    },
     credentials: true,
   })
 );

@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-The frontend expects the Express API at `http://localhost:4000/api` unless `NEXT_PUBLIC_API_URL` is changed.
+The deployed frontend is available at `https://nexus-assignment-six.vercel.app` and uses `https://nexus-assignment-rlf7.onrender.com/api`.
 
 ## Included scope
 
