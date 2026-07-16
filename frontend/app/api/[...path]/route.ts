@@ -1,3 +1,4 @@
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 const backendUrl = (
@@ -6,9 +7,15 @@ const backendUrl = (
   "https://nexus-assignment-rlf7.onrender.com/api"
 ).replace(/\/api\/?$/, "");
 
+const backendClient = axios.create({
+  baseURL: `${backendUrl}/api`,
+  timeout: 30000,
+  validateStatus: () => true,
+  maxBodyLength: Infinity,
+});
+
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
-  const target = new URL(`/api/${path.join("/")}${request.nextUrl.search}`, backendUrl);
   const token = request.cookies.get("access_token")?.value;
   const headers = new Headers();
   const contentType = request.headers.get("content-type");
@@ -16,13 +23,15 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
   if (contentType) headers.set("content-type", contentType);
   if (token) headers.set("authorization", `Bearer ${token}`);
 
-  const response = await fetch(target, {
+  const response = await backendClient.request({
+    url: `/${path.join("/")}${request.nextUrl.search}`,
     method: request.method,
-    headers,
-    body: ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer(),
-    cache: "no-store",
+    headers: Object.fromEntries(headers),
+    data: ["GET", "HEAD"].includes(request.method)
+      ? undefined
+      : Buffer.from(await request.arrayBuffer()),
   });
-  const data = await response.json().catch(() => null);
+  const data = response.data;
   const authToken = data?.data?.token;
 
   if (authToken && ["login", "register"].includes(path.at(-1) || "")) {
