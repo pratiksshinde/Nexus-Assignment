@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-The deployed frontend is available at `https://nexus-assignment-six.vercel.app` and uses `https://nexus-assignment-rlf7.onrender.com/api`.
+The deployed frontend is available at `https://nexus-assignment-six.vercel.app`. Next.js proxies `/api/*` to the Express backend at `https://nexus-assignment-rlf7.onrender.com`, keeping browser authentication same-origin.
 
 ## Included scope
 

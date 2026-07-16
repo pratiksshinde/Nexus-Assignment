@@ -1,8 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-
 export async function api(path: string, options: RequestInit = {}) {
   const isFormData = options.body instanceof FormData;
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`/api${path}`, {
     ...options,
     signal: options.signal || AbortSignal.timeout(30000),
     credentials: "include",
