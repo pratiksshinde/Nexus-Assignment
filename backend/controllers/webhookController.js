@@ -13,10 +13,19 @@ const brevoWebhook = async (req, res) => {
   const timestamp = req.body.ts_event ? new Date(req.body.ts_event * 1000) : new Date();
   const event = String(req.body.event || "").replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 
-  if (["opened", "unique_opened", "loaded_by_proxy"].includes(event)) {
-    await recipient.update({ status: "opened", opened_at: recipient.opened_at || timestamp, delivered_at: recipient.delivered_at || timestamp });
+  if (["opened", "unique_opened"].includes(event)) {
+    await recipient.update({
+      opened_at: recipient.opened_at || timestamp,
+      ...(recipient.delivered_at && { status: "opened" }),
+    });
   } else if (event === "delivered" && recipient.status !== "opened") {
-    await recipient.update({ status: "delivered", delivered_at: recipient.delivered_at || timestamp });
+    await recipient.update({
+      status: recipient.opened_at ? "opened" : "delivered",
+      delivered_at: recipient.delivered_at || timestamp,
+      failure_reason: null,
+    });
+  } else if (event === "deferred" && !["delivered", "opened", "bounced"].includes(recipient.status)) {
+    await recipient.update({ failure_reason: req.body.reason || "Delivery deferred by recipient provider" });
   } else if (["hard_bounce", "soft_bounce", "blocked", "invalid", "error"].includes(event)) {
     await recipient.update({ status: "bounced", failed_at: timestamp, failure_reason: req.body.reason || event });
   }
