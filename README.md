@@ -22,6 +22,13 @@ npm install
 npm run dev
 ```
 
+Start the campaign worker in another terminal:
+
+```bash
+cd backend
+npm run worker
+```
+
 Start the frontend:
 
 ```bash
@@ -33,3 +40,5 @@ npm run dev
 Copy each `.env.example` file to its local `.env` equivalent and provide the required values. Real environment files are intentionally excluded from Git.
 
 Set `BACKEND_URL` in the frontend deployment to the backend origin. The Next.js server proxies `/api/*` requests to Express and keeps the JWT in a secure HTTP-only first-party cookie.
+
+Campaign scheduling uses BullMQ with a hosted Redis URL. Docker is not required. Deploy the backend API and worker as separate processes with the same environment variables.

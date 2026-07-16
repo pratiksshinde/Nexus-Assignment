@@ -22,4 +22,4 @@ The deployed frontend is available at `https://nexus-assignment-six.vercel.app`.
 - Immediate and scheduled sending
 - Sent, delivered and opened analytics refreshed every five seconds
 
-The Express API, Postgres scheduler, Brevo integration, environment variables and deployment process are documented in the backend directory.
+The Express API, BullMQ worker, Brevo integration, environment variables and deployment process are documented in the backend directory.

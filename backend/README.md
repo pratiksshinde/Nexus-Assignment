@@ -5,12 +5,13 @@ Express API for the assessment email marketing app.
 ## Run locally
 
 1. Copy `.env.example` to `.env` and fill in the values.
-2. Use any hosted Postgres connection URL; Docker and Redis are not required.
-3. Run the API:
+2. Use hosted Postgres and Redis connection URLs. Docker is not required. The Redis URL must begin with `redis://` or `rediss://`—do not use an Upstash REST URL.
+3. Run the API and worker in separate terminals:
 
 ```bash
 npm install
 npm run dev
+npm run worker
 ```
 
 The API runs at `http://localhost:4000/api` by default. Sequelize creates missing tables during this assessment-stage build.
@@ -25,11 +26,11 @@ Create a Brevo API key and verify `SENDER_EMAIL`. Configure a transactional webh
 https://YOUR_API_HOST/api/webhooks/brevo?token=YOUR_WEBHOOK_SECRET
 ```
 
-The API checks Postgres every five seconds for scheduled campaigns. Campaign schedules survive API restarts without requiring Redis or a separate worker.
+Immediate and scheduled campaigns are stored as BullMQ jobs in Redis. Delayed jobs survive API and worker restarts.
 
 ## Deployment
 
-Deploy the API with `npm start`. Deploy the Next.js directory separately and set its `NEXT_PUBLIC_API_URL` to the public API URL ending in `/api`.
+Deploy the API with `npm start` and a separate worker with `npm run worker`. Give both services the same `DB_URL`, `REDIS_URL`, Brevo, and JWT environment variables. Deploy the Next.js directory separately and set `BACKEND_URL` to the public backend origin.
 
 ## Deliberate scope
 

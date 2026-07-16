@@ -25,8 +25,22 @@ export default function CampaignDetailsPage() {
 
   useEffect(() => {
     getCampaign(id, { page, limit: 10, status, search })
-      .then((result) => setData(result.data))
+      .then((result) => {
+        setData(result.data);
+        setError("");
+      })
       .catch((caught) => setError(caught.message));
+
+    const timer = setInterval(() => {
+      getCampaign(id, { page, limit: 10, status, search })
+        .then((result) => {
+          setData(result.data);
+          setError("");
+        })
+        .catch(() => undefined);
+    }, 5000);
+
+    return () => clearInterval(timer);
   }, [id, page, status, search]);
 
   const pageHref = (nextPage: number) => {
