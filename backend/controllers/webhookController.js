@@ -13,7 +13,7 @@ const brevoWebhook = async (req, res) => {
   const timestamp = req.body.ts_event ? new Date(req.body.ts_event * 1000) : new Date();
   const event = String(req.body.event || "").replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 
-  if (["opened", "unique_opened", "unique_proxy_open"].includes(event)) {
+  if (["opened", "unique_opened", "loaded_by_proxy"].includes(event)) {
     await recipient.update({ status: "opened", opened_at: recipient.opened_at || timestamp, delivered_at: recipient.delivered_at || timestamp });
   } else if (event === "delivered" && recipient.status !== "opened") {
     await recipient.update({ status: "delivered", delivered_at: recipient.delivered_at || timestamp });

@@ -45,7 +45,10 @@ th, td { overflow-wrap: anywhere; padding: .75rem; text-align: left; vertical-al
 .metrics b { color: var(--ink); font-size: 1.25rem; }
 .status { padding: .25rem .55rem; border-radius: 999px; color: #5a4b00; background: #fff1a8; }
 .status.sent { color: #155331; background: #cdebd9; }
-.status.failed { color: #812828; background: #f4cccc; }
+.status.delivered, .status.opened { color: #155331; background: #cdebd9; }
+.status.bounced, .status.failed { color: #812828; background: #f4cccc; }
+.recipient-table { margin-top: .75rem; font-size: .85rem; }
+.detail { margin-top: .35rem; max-width: 320px; }
 .notice { margin-bottom: 1rem; padding: .8rem; border-radius: 8px; color: #155331; background: #d8f1e2; cursor: pointer; }
 .error { color: var(--danger); }
 .ok { color: var(--brand); }

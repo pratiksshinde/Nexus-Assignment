@@ -65,13 +65,16 @@ const createCampaign = async (req, res) => {
 const getCampaigns = async (req, res) => {
   const campaigns = await Campaign.findAll({
     where: { workspace_id: req.user.workspace_id },
-    include: [{ model: CampaignRecipient, as: "recipients", attributes: ["status"] }],
+    include: [{
+      model: CampaignRecipient,
+      as: "recipients",
+      attributes: ["id", "name", "email", "status", "sent_at", "delivered_at", "opened_at", "failed_at", "failure_reason"],
+    }],
     order: [["createdAt", "DESC"]],
   });
   res.json({ success: true, data: { campaigns: campaigns.map((campaign) => ({
     ...campaign.toJSON(),
     analytics: analyticsFor(campaign.recipients),
-    recipients: undefined,
   })) } });
 };
 

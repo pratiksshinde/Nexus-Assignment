@@ -6,10 +6,22 @@ import { api, setAuthToken } from "./lib/api";
 type Tag = { id: number; name: string; contact_count?: number };
 type Contact = { id: number; name: string; email?: string; phone?: string; city?: string; tags: Tag[] };
 type Audience = { id: number; name: string; contact_count: number; filter_definition: Record<string, unknown> };
-type Campaign = { id: number; name: string; subject: string; status: string; scheduled_at?: string; analytics: Record<string, number> };
+type CampaignRecipient = {
+  id: number;
+  name?: string;
+  email: string;
+  status: string;
+  sent_at?: string;
+  delivered_at?: string;
+  opened_at?: string;
+  failed_at?: string;
+  failure_reason?: string;
+};
+type Campaign = { id: number; name: string; subject: string; status: string; scheduled_at?: string; analytics: Record<string, number>; recipients: CampaignRecipient[] };
 type RecipientPreview = { input: string; matched: boolean; sendable: boolean; contact: Contact | null };
 
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : "Something went wrong";
+const displayDate = (value?: string) => value ? new Date(value).toLocaleString() : "—";
 
 function Auth({ onDone }: { onDone: () => void }) {
   const [register, setRegister] = useState(false);
@@ -143,6 +155,7 @@ function Campaigns({ campaigns, audiences, tags, reload, notice }: { campaigns: 
   const [manual, setManual] = useState("");
   const [preview, setPreview] = useState<RecipientPreview[]>([]);
   const [schedule, setSchedule] = useState<Record<number, string>>({});
+  const [expanded, setExpanded] = useState<number | null>(null);
   const [busy, setBusy] = useState("");
   const identifiers = [...new Set(manual.split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean))];
 
@@ -168,14 +181,14 @@ function Campaigns({ campaigns, audiences, tags, reload, notice }: { campaigns: 
     finally { setBusy(""); }
   }
   return <section><h2>Campaigns</h2><form className="card" onSubmit={create}><h3>Create campaign</h3><input name="name" placeholder="Campaign name" required disabled={Boolean(busy)} /><input name="subject" placeholder="Email subject" required disabled={Boolean(busy)} /><textarea name="body_html" placeholder="Email body (HTML is allowed)" rows={6} required disabled={Boolean(busy)} /><select value={source} disabled={Boolean(busy)} onChange={(event) => { setSource(event.target.value); setPreview([]); }}><option value="audience">Audience</option><option value="tag">Tag</option><option value="manual">Paste emails or phones</option></select>{source === "audience" && <select name="source_id" required disabled={Boolean(busy)}><option value="">Choose audience</option>{audiences.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.contact_count})</option>)}</select>}{source === "tag" && <select name="source_id" required disabled={Boolean(busy)}><option value="">Choose tag</option>{tags.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>}{source === "manual" && <><textarea value={manual} disabled={Boolean(busy)} onChange={(event) => setManual(event.target.value)} placeholder="One email or phone per line" rows={5} required /><button type="button" className="secondary" disabled={Boolean(busy)} onClick={previewManual}>{busy === "preview" ? "Matching…" : "Match recipients"}</button>{preview.length > 0 && <ul className="preview">{preview.map((item) => <li className={item.sendable ? "ok" : "error"} key={item.input}>{item.input} — {item.contact?.name || "not matched"}{item.matched && !item.sendable ? " (no email)" : ""}</li>)}</ul>}</>}<button disabled={Boolean(busy)}>{busy === "create" ? "Creating…" : "Create draft"}</button></form>
-    <div className="cards">{campaigns.map((campaign) => <article className="card" key={campaign.id}><div className="spread"><div><h3>{campaign.name}</h3><p>{campaign.subject}</p></div><span className={`status ${campaign.status}`}>{campaign.status}</span></div><div className="metrics"><span>Recipients <b>{campaign.analytics.recipients}</b></span><span>Sent <b>{campaign.analytics.sent}</b></span><span>Delivered <b>{campaign.analytics.delivered}</b></span><span>Opened <b>{campaign.analytics.opened}</b></span></div>{campaign.status === "draft" && <div className="inline"><input type="datetime-local" value={schedule[campaign.id] || ""} onChange={(event) => setSchedule({ ...schedule, [campaign.id]: event.target.value })} /><button onClick={async () => {
+    <div className="cards">{campaigns.map((campaign) => <article className="card" key={campaign.id}><div className="spread"><div><h3>{campaign.name}</h3><p>{campaign.subject}</p></div><span className={`status ${campaign.status}`}>{campaign.status}</span></div><div className="metrics"><span>Recipients <b>{campaign.analytics.recipients}</b></span><span>Sent <b>{campaign.analytics.sent}</b></span><span>Delivered <b>{campaign.analytics.delivered}</b></span><span>Opened <b>{campaign.analytics.opened}</b></span><span>Failed <b>{campaign.analytics.failed}</b></span></div>{campaign.status === "draft" && <div className="inline"><input type="datetime-local" value={schedule[campaign.id] || ""} onChange={(event) => setSchedule({ ...schedule, [campaign.id]: event.target.value })} /><button onClick={async () => {
       setBusy(`send-${campaign.id}`);
       try {
         await api(`/campaigns/${campaign.id}/send`, { method: "POST", body: JSON.stringify(schedule[campaign.id] ? { scheduled_at: new Date(schedule[campaign.id]).toISOString() } : {}) });
         await reload();
       } catch (caught) { notice(errorMessage(caught)); }
       finally { setBusy(""); }
-    }} disabled={Boolean(busy)}>{busy === `send-${campaign.id}` ? "Queueing…" : schedule[campaign.id] ? "Schedule" : "Send now"}</button></div>}</article>)}</div>
+    }} disabled={Boolean(busy)}>{busy === `send-${campaign.id}` ? "Queueing…" : schedule[campaign.id] ? "Schedule" : "Send now"}</button></div>}<button className="secondary small" onClick={() => setExpanded(expanded === campaign.id ? null : campaign.id)}>{expanded === campaign.id ? "Hide recipients" : "View recipients"}</button>{expanded === campaign.id && <div className="table-wrap recipient-table"><table><thead><tr><th>Recipient</th><th>Status</th><th>Sent</th><th>Delivered</th><th>Opened / failed</th></tr></thead><tbody>{(campaign.recipients || []).map((recipient) => <tr key={recipient.id}><td>{recipient.name && <strong>{recipient.name}<br /></strong>}{recipient.email}</td><td><span className={`status ${recipient.status}`}>{recipient.status}</span></td><td>{displayDate(recipient.sent_at)}</td><td>{displayDate(recipient.delivered_at)}</td><td>{displayDate(recipient.opened_at || recipient.failed_at)}{recipient.failure_reason && <div className="error detail">{recipient.failure_reason}</div>}</td></tr>)}</tbody></table></div>}</article>)}</div>
   </section>;
 }
 
