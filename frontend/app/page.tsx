@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { api } from "./lib/api";
+import { api, setAuthToken } from "./lib/api";
 
 type Tag = { id: number; name: string; contact_count?: number };
 type Contact = { id: number; name: string; email?: string; phone?: string; city?: string; tags: Tag[] };
@@ -22,7 +22,8 @@ function Auth({ onDone }: { onDone: () => void }) {
     setBusy(true);
     setError("");
     try {
-      await api(`/auth/${register ? "register" : "login"}`, { method: "POST", body: JSON.stringify(values) });
+      const result = await api(`/auth/${register ? "register" : "login"}`, { method: "POST", body: JSON.stringify(values) });
+      setAuthToken(result.data.token);
       await onDone();
     } catch (caught) { setError(errorMessage(caught)); }
     finally { setBusy(false); }
@@ -229,5 +230,5 @@ export default function Home() {
   }, [user, tab, loadCampaigns]);
   if (!ready) return <main className="auth-shell">Loading…</main>;
   if (!user) return <Auth onDone={authenticate} />;
-  return <><header><strong>Nexus Mail</strong><nav>{["contacts", "audiences", "campaigns"].map((item) => <button className={tab === item ? "active" : ""} key={item} onClick={() => setTab(item)}>{item}</button>)}</nav><div>{user.name} <button className="link" onClick={async () => { await api("/auth/logout", { method: "POST" }); setUser(null); }}>Log out</button></div></header><main className="container">{message && <div className="notice" onClick={() => setMessage("")}>{message}</div>}{tab === "contacts" && <Contacts contacts={contacts} tags={tags} reload={reloadContacts} notice={setMessage} />}{tab === "audiences" && <Audiences audiences={audiences} tags={tags} reload={loadAudiences} notice={setMessage} />}{tab === "campaigns" && <Campaigns campaigns={campaigns} audiences={audiences} tags={tags} reload={loadCampaigns} notice={setMessage} />}</main></>;
+  return <><header><strong>Nexus Mail</strong><nav>{["contacts", "audiences", "campaigns"].map((item) => <button className={tab === item ? "active" : ""} key={item} onClick={() => setTab(item)}>{item}</button>)}</nav><div>{user.name} <button className="link" onClick={async () => { await api("/auth/logout", { method: "POST" }); setAuthToken(null); setUser(null); }}>Log out</button></div></header><main className="container">{message && <div className="notice" onClick={() => setMessage("")}>{message}</div>}{tab === "contacts" && <Contacts contacts={contacts} tags={tags} reload={reloadContacts} notice={setMessage} />}{tab === "audiences" && <Audiences audiences={audiences} tags={tags} reload={loadAudiences} notice={setMessage} />}{tab === "campaigns" && <Campaigns campaigns={campaigns} audiences={audiences} tags={tags} reload={loadCampaigns} notice={setMessage} />}</main></>;
 }

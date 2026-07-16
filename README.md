@@ -39,4 +39,4 @@ npm run dev
 
 Copy each `.env.example` file to its local `.env` equivalent and provide the required values. Real environment files are intentionally excluded from Git.
 
-The frontend uses a Next.js rewrite for `/api/*`, forwarding requests to the Express backend while keeping browser authentication cookies first-party.
+Set `NEXT_PUBLIC_API_URL` in the frontend deployment to the backend URL ending in `/api`. Authentication uses the secure cookie when available and a bearer token fallback for reliable Vercel-to-Render requests.

@@ -79,6 +79,7 @@ const register = async (req, res, next) => {
       success: true,
       message: "Account created successfully",
       data: {
+        token,
         user: {
           id: user.id,
           name: user.name,
@@ -157,6 +158,7 @@ const login = async (req, res, next) => {
       success: true,
       message: "Logged in successfully",
       data: {
+        token,
         user: {
           id: user.id,
           name: user.name,
