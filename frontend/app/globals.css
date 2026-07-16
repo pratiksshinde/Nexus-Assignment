@@ -14,6 +14,9 @@ button.link { padding: .25rem; color: var(--brand); background: transparent; }
 input, select, textarea { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 7px; padding: .7rem; background: white; }
 input:disabled, select:disabled, textarea:disabled { color: var(--muted); background: var(--soft); }
 textarea { resize: vertical; }
+fieldset { min-width: 0; margin: 0; }
+.custom-field-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; padding: .75rem; border: 1px solid var(--line); border-radius: 7px; }
+.custom-field-inputs legend { padding: 0 .35rem; color: var(--muted); font-size: .85rem; }
 form, section, article { min-width: 0; }
 form { display: grid; gap: .75rem; }
 h1, h2, h3, p { margin-top: 0; }
@@ -67,6 +70,8 @@ th, td { overflow-wrap: anywhere; padding: .75rem; text-align: left; vertical-al
 .pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; color: var(--muted); }
 .pagination > div { display: flex; gap: .5rem; }
 .empty-state { padding: 2rem; text-align: center; color: var(--muted); }
+.audience-count { margin-bottom: .55rem; }
+.audience-rule { padding: .65rem .75rem; border-radius: 7px; color: var(--muted); background: var(--soft); }
 .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 45%); }
 .modal { width: min(520px, 100%); max-height: calc(100vh - 2rem); overflow-y: auto; }
 .modal h3 { margin: 0; }
@@ -84,4 +89,5 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; color: va
   .pagination, .detail-header { align-items: stretch; flex-direction: column; }
   .spread { align-items: flex-start; }
   .card { padding: 1rem; }
+  .custom-field-inputs { grid-template-columns: 1fr; }
 }

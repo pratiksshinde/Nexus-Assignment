@@ -53,6 +53,21 @@ export default function AudiencesSection({
     }
   }
 
+  function ruleDescription(audience: Audience) {
+    const rule = audience.filter_definition;
+    const value = String(rule.value || "");
+
+    if (rule.type === "tag") {
+      return `Tagged as ${tags.find((tag) => String(tag.id) === value)?.name || value}`;
+    }
+
+    if (rule.type === "custom_field") {
+      return `${String(rule.field || "Custom field")} equals ${value}`;
+    }
+
+    return `City ${rule.operator === "contains" ? "contains" : "equals"} ${value}`;
+  }
+
   return (
     <section>
       <h2>Audiences</h2>
@@ -85,8 +100,10 @@ export default function AudiencesSection({
         {audiences.map((audience) => (
           <article className="card" key={audience.id}>
             <h3>{audience.name}</h3>
-            <strong>{audience.contact_count} contacts</strong>
-            <pre>{JSON.stringify(audience.filter_definition)}</pre>
+            <p className="audience-count">
+              <strong>{audience.contact_count}</strong> {audience.contact_count === 1 ? "contact" : "contacts"}
+            </p>
+            <p className="audience-rule">{ruleDescription(audience)}</p>
             <button className="danger small" onClick={() => remove(audience.id)}>Delete</button>
           </article>
         ))}

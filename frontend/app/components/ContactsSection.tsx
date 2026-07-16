@@ -12,6 +12,37 @@ import type { Contact, Tag } from "../types";
 import { errorMessage } from "../utils";
 import ContactTags from "./ContactTags";
 
+function contactValues(form: HTMLFormElement) {
+  const values = Object.fromEntries(new FormData(form));
+  const field = String(values.custom_field_name || "").trim();
+  const value = String(values.custom_field_value || "").trim();
+
+  if (field && !value) throw new Error("Enter a value for the custom field");
+  if (value && !field) throw new Error("Enter a name for the custom field");
+
+  delete values.custom_field_name;
+  delete values.custom_field_value;
+  return { ...values, custom_fields: field ? { [field]: value } : {} };
+}
+
+function CustomFieldInputs({
+  customFields = {},
+  disabled,
+}: {
+  customFields?: Record<string, unknown>;
+  disabled: boolean;
+}) {
+  const [field = "", value = ""] = Object.entries(customFields)[0] || [];
+
+  return (
+    <fieldset className="custom-field-inputs" disabled={disabled}>
+      <legend>Custom field (optional)</legend>
+      <input name="custom_field_name" defaultValue={field} placeholder="Field name, e.g. Plan" />
+      <input name="custom_field_value" defaultValue={String(value)} placeholder="Value, e.g. Premium" />
+    </fieldset>
+  );
+}
+
 export default function ContactsSection({
   contacts,
   tags,
@@ -35,9 +66,7 @@ export default function ContactsSection({
     event.preventDefault();
     const form = event.currentTarget;
     await run("contact", async () => {
-      const values = Object.fromEntries(new FormData(form));
-      values.custom_fields = values.custom_fields ? JSON.parse(String(values.custom_fields)) : {};
-      await createContact(values);
+      await createContact(contactValues(form));
       form.reset();
       await reload();
       notice("Contact added");
@@ -49,9 +78,7 @@ export default function ContactsSection({
     if (!editing) return;
     const form = event.currentTarget;
     await run("edit", async () => {
-      const values = Object.fromEntries(new FormData(form));
-      values.custom_fields = values.custom_fields ? JSON.parse(String(values.custom_fields)) : {};
-      await updateContact(editing.id, values);
+      await updateContact(editing.id, contactValues(form));
       setEditing(null);
       await reload();
       notice("Contact updated");
@@ -93,7 +120,7 @@ export default function ContactsSection({
           <input name="email" type="email" placeholder="Email" disabled={Boolean(busy)} />
           <input name="phone" placeholder="Phone" disabled={Boolean(busy)} />
           <input name="city" placeholder="City" disabled={Boolean(busy)} />
-          <textarea name="custom_fields" placeholder='Custom fields JSON, e.g. {"plan":"pro"}' rows={2} disabled={Boolean(busy)} />
+          <CustomFieldInputs disabled={Boolean(busy)} />
           <button disabled={Boolean(busy)}>{busy === "contact" ? "Adding…" : "Add contact"}</button>
         </form>
         <div className="stack">
@@ -145,13 +172,7 @@ export default function ContactsSection({
               <input name="email" type="email" defaultValue={editing.email || ""} placeholder="Email" disabled={Boolean(busy)} />
               <input name="phone" defaultValue={editing.phone || ""} placeholder="Phone" disabled={Boolean(busy)} />
               <input name="city" defaultValue={editing.city || ""} placeholder="City" disabled={Boolean(busy)} />
-              <textarea
-                name="custom_fields"
-                defaultValue={editing.custom_fields ? JSON.stringify(editing.custom_fields) : ""}
-                placeholder='Custom fields JSON, e.g. {"plan":"pro"}'
-                rows={3}
-                disabled={Boolean(busy)}
-              />
+              <CustomFieldInputs customFields={editing.custom_fields} disabled={Boolean(busy)} />
               <div className="modal-actions">
                 <button type="button" className="secondary" disabled={Boolean(busy)} onClick={() => setEditing(null)}>Cancel</button>
                 <button disabled={Boolean(busy)}>{busy === "edit" ? "Saving…" : "Update contact"}</button>
