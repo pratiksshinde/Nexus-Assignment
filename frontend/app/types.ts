@@ -23,10 +23,3 @@ export type Campaign = {
   recipients?: CampaignRecipient[];
 };
 export type RecipientPreview = { input: string; matched: boolean; sendable: boolean; contact: Contact | null };
-export type DashboardData = {
-  user: User;
-  contacts: Contact[];
-  tags: Tag[];
-  audiences: Audience[];
-  campaigns: Campaign[];
-};

@@ -1,6 +1,7 @@
 import { apiClient } from "./api";
 
 export const getCampaigns = () => apiClient.get("/campaigns");
+export const getCampaign = (id, params) => apiClient.get(`/campaigns/${id}`, { params });
 export const createCampaign = (values) => apiClient.post("/campaigns", values);
 export const previewRecipients = (identifiers) =>
   apiClient.post("/campaigns/recipients/preview", { identifiers });
