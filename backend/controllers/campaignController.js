@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { sequelize, Campaign, CampaignRecipient } = require("../models");
 const { resolveSource, previewManualRecipients } = require("../services/recipientService");
 const { processDueCampaigns } = require("../services/campaignScheduler");
@@ -68,23 +69,62 @@ const getCampaigns = async (req, res) => {
     include: [{
       model: CampaignRecipient,
       as: "recipients",
-      attributes: ["id", "name", "email", "status", "sent_at", "delivered_at", "opened_at", "failed_at", "failure_reason"],
+      attributes: ["status"],
     }],
     order: [["createdAt", "DESC"]],
   });
   res.json({ success: true, data: { campaigns: campaigns.map((campaign) => ({
     ...campaign.toJSON(),
     analytics: analyticsFor(campaign.recipients),
+    recipients: undefined,
   })) } });
 };
 
 const getCampaign = async (req, res) => {
-  const campaign = await Campaign.findOne({
-    where: campaignWhere(req),
-    include: [{ model: CampaignRecipient, as: "recipients" }],
-  });
+  const campaign = await Campaign.findOne({ where: campaignWhere(req) });
   if (!campaign) return res.status(404).json({ success: false, message: "Campaign not found" });
-  res.json({ success: true, data: { campaign, analytics: analyticsFor(campaign.recipients) } });
+
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(5, Number(req.query.limit) || 10));
+  const allowedStatuses = ["pending", "queued", "sent", "delivered", "opened", "failed", "bounced"];
+  const requestedStatus = String(req.query.status || "");
+  const status = allowedStatuses.includes(requestedStatus) ? requestedStatus : "";
+  const search = String(req.query.search || "").trim();
+  const where = {
+    campaign_id: campaign.id,
+    ...(status && status !== "all" && { status }),
+    ...(search && {
+      [Op.or]: [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } },
+      ],
+    }),
+  };
+
+  const [allRecipients, recipients] = await Promise.all([
+    CampaignRecipient.findAll({ where: { campaign_id: campaign.id }, attributes: ["status"] }),
+    CampaignRecipient.findAndCountAll({
+      where,
+      order: [["id", "ASC"]],
+      limit,
+      offset: (page - 1) * limit,
+    }),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      campaign,
+      analytics: analyticsFor(allRecipients),
+      recipients: recipients.rows,
+      pagination: {
+        page,
+        limit,
+        total: recipients.count,
+        pages: Math.max(1, Math.ceil(recipients.count / limit)),
+      },
+    },
+  });
 };
 
 const updateCampaign = async (req, res) => {

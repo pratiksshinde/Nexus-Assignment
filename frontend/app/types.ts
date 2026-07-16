@@ -20,6 +20,13 @@ export type Campaign = {
   status: string;
   scheduled_at?: string;
   analytics: Record<string, number>;
-  recipients: CampaignRecipient[];
+  recipients?: CampaignRecipient[];
 };
 export type RecipientPreview = { input: string; matched: boolean; sendable: boolean; contact: Contact | null };
+export type DashboardData = {
+  user: User;
+  contacts: Contact[];
+  tags: Tag[];
+  audiences: Audience[];
+  campaigns: Campaign[];
+};

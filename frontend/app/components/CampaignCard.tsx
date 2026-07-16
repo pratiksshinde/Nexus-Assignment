@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { sendCampaign } from "../services/campaignService";
 import type { Campaign } from "../types";
-import { displayDate, errorMessage } from "../utils";
+import { errorMessage } from "../utils";
 
 export default function CampaignCard({
   campaign,
@@ -14,7 +15,6 @@ export default function CampaignCard({
   reload: () => Promise<void>;
   notice: (text: string) => void;
 }) {
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [scheduledAt, setScheduledAt] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -46,7 +46,6 @@ export default function CampaignCard({
         <span>Open detected <b>{campaign.analytics.opened}</b></span>
         <span>Failed <b>{campaign.analytics.failed}</b></span>
       </div>
-      <p className="hint">Accepted means Brevo accepted the request. Opens can include mailbox privacy scans.</p>
       <div className="campaign-actions">
         {campaign.status === "draft" && (
           <div className="inline">
@@ -56,31 +55,8 @@ export default function CampaignCard({
             </button>
           </div>
         )}
-        <button className="secondary small" onClick={() => setDetailsOpen((open) => !open)}>
-          {detailsOpen ? "Hide recipients" : "View recipients"}
-        </button>
+        <Link className="button secondary small" href={`/campaigns/${campaign.id}`}>View details</Link>
       </div>
-      {detailsOpen && (
-        <div className="table-wrap recipient-table">
-          <table>
-            <thead><tr><th>Recipient</th><th>Status</th><th>Accepted</th><th>Delivered</th><th>Opened / failed</th></tr></thead>
-            <tbody>
-              {(campaign.recipients || []).map((recipient) => (
-                <tr key={recipient.id}>
-                  <td>{recipient.name && <><strong>{recipient.name}</strong><br /></>}{recipient.email}</td>
-                  <td><span className={`status ${recipient.status}`}>{recipient.status}</span></td>
-                  <td>{displayDate(recipient.sent_at)}</td>
-                  <td>{displayDate(recipient.delivered_at)}</td>
-                  <td>
-                    {displayDate(recipient.opened_at || recipient.failed_at)}
-                    {recipient.failure_reason && <div className="error detail">{recipient.failure_reason}</div>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </article>
   );
 }

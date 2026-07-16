@@ -1,27 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { getAudiences } from "../services/audienceService";
-import { getCurrentUser, logout } from "../services/authService";
+import { logout } from "../services/authService";
 import { getCampaigns } from "../services/campaignService";
 import { getContacts, getTags } from "../services/contactService";
-import type { Audience, Campaign, Contact, Tag, User } from "../types";
-import { errorMessage } from "../utils";
+import type { Audience, Campaign, Contact, DashboardData, Tag, User } from "../types";
 import AppHeader from "./AppHeader";
 import AudiencesSection from "./AudiencesSection";
 import AuthForm from "./AuthForm";
 import CampaignsSection from "./CampaignsSection";
 import ContactsSection from "./ContactsSection";
 
-export default function Dashboard() {
-  const [ready, setReady] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [tab, setTab] = useState("contacts");
+export default function Dashboard({
+  initialData,
+  initialTab,
+}: {
+  initialData: DashboardData | null;
+  initialTab: string;
+}) {
+  const [user, setUser] = useState<User | null>(initialData?.user || null);
+  const [tab, setTab] = useState(initialTab);
   const [message, setMessage] = useState("");
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [audiences, setAudiences] = useState<Audience[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>(initialData?.contacts || []);
+  const [tags, setTags] = useState<Tag[]>(initialData?.tags || []);
+  const [audiences, setAudiences] = useState<Audience[]>(initialData?.audiences || []);
+  const [campaigns, setCampaigns] = useState<Campaign[]>(initialData?.campaigns || []);
 
   const loadContacts = useCallback(async () => {
     const result = await getContacts();
@@ -43,51 +47,16 @@ export default function Dashboard() {
     setCampaigns(result.data.campaigns);
   }, []);
 
-  const loadAll = useCallback(
-    () => Promise.all([loadContacts(), loadTags(), loadAudiences(), loadCampaigns()]).then(() => undefined),
-    [loadContacts, loadTags, loadAudiences, loadCampaigns],
-  );
-
   const reloadContacts = useCallback(
     () => Promise.all([loadContacts(), loadTags(), loadAudiences()]).then(() => undefined),
     [loadContacts, loadTags, loadAudiences],
   );
 
-  const authenticate = useCallback(async () => {
-    try {
-      const result = await getCurrentUser();
-      setUser(result.data.user);
-      await loadAll();
-    } catch (caught) {
-      setUser(null);
-      setMessage(errorMessage(caught));
-    } finally {
-      setReady(true);
-    }
-  }, [loadAll]);
-
-  useEffect(() => {
-    getCurrentUser()
-      .then(async (result) => {
-        setUser(result.data.user);
-        await loadAll();
-      })
-      .catch(() => setUser(null))
-      .finally(() => setReady(true));
-  }, [loadAll]);
-
-  useEffect(() => {
-    if (!user || tab !== "campaigns") return;
-    const timer = setInterval(() => loadCampaigns().catch(() => undefined), 5000);
-    return () => clearInterval(timer);
-  }, [user, tab, loadCampaigns]);
-
   async function signOut() {
     try { await logout(); } finally { setUser(null); }
   }
 
-  if (!ready) return <main className="auth-shell">Loading…</main>;
-  if (!user) return <AuthForm onDone={authenticate} />;
+  if (!user) return <AuthForm onDone={async () => window.location.reload()} />;
 
   return (
     <>
