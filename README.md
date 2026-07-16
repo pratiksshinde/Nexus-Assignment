@@ -32,4 +32,4 @@ npm run dev
 
 Copy each `.env.example` file to its local `.env` equivalent and provide the required values. Real environment files are intentionally excluded from Git.
 
-Set `NEXT_PUBLIC_API_URL` in the frontend deployment to the backend URL ending in `/api`. Authentication uses the secure cookie when available and a bearer token fallback for reliable Vercel-to-Render requests.
+Set `BACKEND_URL` in the frontend deployment to the backend origin. The Next.js server proxies `/api/*` requests to Express and keeps the JWT in a secure HTTP-only first-party cookie.

@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-The deployed frontend is available at `https://nexus-assignment-six.vercel.app`. Next.js proxies `/api/*` to the Express backend at `https://nexus-assignment-rlf7.onrender.com`, keeping browser authentication same-origin.
+The deployed frontend is available at `https://nexus-assignment-six.vercel.app`. Set `BACKEND_URL` to the backend origin. Next.js proxies `/api/*` to Express and keeps authentication in a secure HTTP-only first-party cookie.
 
 ## Included scope
 
@@ -22,4 +22,4 @@ The deployed frontend is available at `https://nexus-assignment-six.vercel.app`.
 - Immediate and scheduled sending
 - Sent, delivered and opened analytics refreshed every five seconds
 
-The Express API, BullMQ worker, Postgres models, Brevo integration, environment variables and deployment process are documented in the backend repository.
+The Express API, Postgres scheduler, Brevo integration, environment variables and deployment process are documented in the backend directory.

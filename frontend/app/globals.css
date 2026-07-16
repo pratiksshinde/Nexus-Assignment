@@ -28,6 +28,10 @@ header nav button.active { color: white; background: var(--brand); }
 .grid.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .stack, .cards { display: grid; gap: 1rem; }
 .cards { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); margin-top: 1rem; }
+.campaign-list { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem; }
+.campaign-card { width: 100%; }
+.campaign-actions { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.campaign-actions .inline { flex: 1 1 420px; }
 .inline, .form-row, .spread, .metrics { min-width: 0; display: flex; align-items: center; gap: .65rem; }
 .inline { flex-wrap: wrap; }
 .inline > input { flex: 1 1 190px; }
@@ -61,6 +65,7 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; color: va
   header nav button { flex: 1; }
   .grid.two { grid-template-columns: 1fr; }
   .metrics { align-items: flex-start; flex-direction: column; }
+  .campaign-actions { align-items: stretch; flex-direction: column; }
   .spread { align-items: flex-start; }
   .card { padding: 1rem; }
 }
