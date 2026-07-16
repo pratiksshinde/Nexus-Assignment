@@ -70,12 +70,12 @@ export default async function CampaignDetailsPage({
 
         <div className="table-wrap recipient-table">
           <table>
-            <thead><tr><th>Recipient</th><th>Status</th><th>Accepted</th><th>Delivered</th><th>Opened</th><th>Details</th></tr></thead>
+            <thead><tr><th>Recipient</th><th className="status-column">Status</th><th>Accepted</th><th>Delivered</th><th>Opened</th><th>Details</th></tr></thead>
             <tbody>
               {recipients.map((recipient) => (
                 <tr key={recipient.id}>
                   <td>{recipient.name && <><strong>{recipient.name}</strong><br /></>}{recipient.email}</td>
-                  <td><span className={`status ${recipient.status}`}>{recipient.status}</span></td>
+                  <td className="status-column"><span className={`status ${recipient.status}`}>{recipient.status}</span></td>
                   <td>{displayDate(recipient.sent_at)}</td>
                   <td>{displayDate(recipient.delivered_at)}</td>
                   <td>{displayDate(recipient.opened_at)}</td>

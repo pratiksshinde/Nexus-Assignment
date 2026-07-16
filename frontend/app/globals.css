@@ -48,6 +48,8 @@ th, td { overflow-wrap: anywhere; padding: .75rem; text-align: left; vertical-al
 .metrics span { display: grid; gap: .2rem; color: var(--muted); }
 .metrics b { color: var(--ink); font-size: 1.25rem; }
 .status { padding: .25rem .55rem; border-radius: 999px; color: #5a4b00; background: #fff1a8; }
+.status, .status-column { white-space: nowrap; }
+.status-column { width: 130px; min-width: 130px; }
 .status.sent { color: #155331; background: #cdebd9; }
 .status.delivered, .status.opened { color: #155331; background: #cdebd9; }
 .status.bounced, .status.failed { color: #812828; background: #f4cccc; }
