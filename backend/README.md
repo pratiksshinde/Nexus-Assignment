@@ -30,7 +30,11 @@ Immediate and scheduled campaigns are stored as BullMQ jobs in Redis. Delayed jo
 
 ## Deployment
 
-Deploy the API with `npm start` and a separate worker with `npm run worker`. Give both services the same `DB_URL`, `REDIS_URL`, Brevo, and JWT environment variables. Deploy the Next.js directory separately and set `BACKEND_URL` to the public backend origin.
+For a zero-cost Render deployment, keep one Web Service with `npm start` and set `RUN_WORKER=true`. The API then runs the same BullMQ worker in its process.
+
+If your host supports a separate worker service, keep `RUN_WORKER=false` on the API and start the worker with `npm run worker`. Give both services the same `DB_URL`, `REDIS_URL`, Brevo, and JWT environment variables.
+
+Deploy the Next.js directory separately and set `BACKEND_URL` to the public backend origin.
 
 ## Deliberate scope
 

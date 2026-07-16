@@ -40,7 +40,11 @@ async function startWorker() {
   console.log("Campaign worker running");
 }
 
-startWorker().catch((error) => {
-  console.error("Campaign worker failed to start", error);
-  process.exit(1);
-});
+if (require.main === module) {
+  startWorker().catch((error) => {
+    console.error("Campaign worker failed to start", error);
+    process.exit(1);
+  });
+}
+
+module.exports = { startWorker };

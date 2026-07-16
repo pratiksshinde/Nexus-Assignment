@@ -41,4 +41,4 @@ Copy each `.env.example` file to its local `.env` equivalent and provide the req
 
 Set `BACKEND_URL` in the frontend deployment to the backend origin. The Next.js server proxies `/api/*` requests to Express and keeps the JWT in a secure HTTP-only first-party cookie.
 
-Campaign scheduling uses BullMQ with a hosted Redis URL. Docker is not required. Deploy the backend API and worker as separate processes with the same environment variables.
+Campaign scheduling uses BullMQ with a hosted Redis URL. Docker is not required. On a free Render Web Service, set `RUN_WORKER=true`; hosts with worker services can run `npm run worker` separately.
